@@ -4,7 +4,6 @@ import Home from '../pages/home/Home'
 import { Feature } from '../pages/feature'
 
 function App() {
-
   return (
     <Router>
       <Routes>

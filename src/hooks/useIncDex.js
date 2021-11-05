@@ -7,7 +7,6 @@ const useIncDex = () => {
   const [ tokenList, setTokenlist ] = useState()
 
   const getSupportedTokens = async (chain) => {
-    Moralis.enableWeb3()
     await Moralis.initPlugins()
     Moralis.Plugins.oneInch
       .getSupportedTokens({ chain })

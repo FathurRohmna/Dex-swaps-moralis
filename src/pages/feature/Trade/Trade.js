@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { useMoralis } from 'react-moralis'
 
 import { IoMdSettings } from 'react-icons/io'
 import { MdHistory } from 'react-icons/md'
+import { AiOutlineArrowDown } from 'react-icons/ai'
 
 import useIncDex from '../../../hooks/useIncDex'
 import { Controllers } from '../../../components/Controllers'
@@ -13,7 +15,7 @@ const Trade = () => {
 
   return (
     <div className="relative w-full">
-      <div className="flex flex-col justify-center items-center w-full min-h-screen">
+      <div className="flex flex-col py-8 justify-center items-center w-full min-h-90">
         <div className="flex mb-8 p-2">
           <div className="px-6 py-2 bg-primary rounded-l-full">
             <h1 className="text-center font-black text-white text-lg">Swap</h1>
@@ -40,7 +42,7 @@ const Trade = () => {
               </div>
 
               <div className="p-6">
-                <div className="w-full flex bg-secondary p-4 rounded-xl mb-6">
+                <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
                   <div className="w-3/4 px-1">
                     <p className="text-white text-base">From</p>
                     <Controllers.InputText
@@ -49,13 +51,19 @@ const Trade = () => {
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
-                    <button onClick={() => getSupportedTokens("eth")}>
+                    <button onClick={() => getSupportedTokens("bsc")}>
                       Token
                     </button>
                   </div>
                 </div>
 
-                <div className="w-full flex bg-secondary p-4 rounded-xl mb-6">
+                <div className="flex w-full items-center justify-center mb-3">
+                  <button className="p-1 bg-secondary text-primary rounded-full">
+                    <AiOutlineArrowDown size={25} />
+                  </button>
+                </div>
+
+                <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
                   <div className="w-3/4 px-1">
                     <p className="text-white">To</p>
                     <Controllers.InputText
@@ -66,6 +74,11 @@ const Trade = () => {
                   <div className="w-1/4 px-1 self-end">
                     <p>Hello</p>
                   </div>
+                </div>
+
+                <div className="flex w-full items-center justify-between text-sm px-4 py-3 text-white mb-3">
+                  <p>Slipage Tolerance</p>
+                  <p>6.3%</p>
                 </div>
 
                 <button className="bg-primary text-center p-4 rounded-2xl w-full font-bold text-white text-lg">
