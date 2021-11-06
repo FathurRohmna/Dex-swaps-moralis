@@ -8,10 +8,31 @@ import { AiOutlineArrowDown } from 'react-icons/ai'
 import useIncDex from '../../../hooks/useIncDex'
 import { Controllers } from '../../../components/Controllers'
 
-const Trade = () => {
-  const { getSupportedTokens, tokenList } = useIncDex()
+const Trade = ({
+  isTokenListLoaded,
+  isTokenListLoading,
+  tokenLists,
+  setTokenSupportList,
+  setTokenSupportListSuccess,
+  setFailed
+}) => {
+  const { getSupportedTokens } = useIncDex()
 
-  console.log(tokenList)
+  const handleGetTokenSupport = async () => {
+    if(!tokenLists) {
+      setTokenSupportList()
+      const tokenLists = await getSupportedTokens('eth')
+      if (!tokenLists) {
+        setFailed({
+          message: 'Failed to Load Support Tokens'
+        })
+      } else {
+        setTokenSupportListSuccess(tokenLists.tokens)
+      }
+    }
+  }
+
+  console.log(tokenLists, 'okenLists')
 
   return (
     <div className="relative w-full">
@@ -51,7 +72,7 @@ const Trade = () => {
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
-                    <button onClick={() => getSupportedTokens("bsc")}>
+                    <button onClick={() => handleGetTokenSupport()}>
                       Token
                     </button>
                   </div>

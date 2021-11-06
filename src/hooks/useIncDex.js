@@ -4,16 +4,14 @@ import { useMoralis } from 'react-moralis'
 const useIncDex = () => {
   const { Moralis } = useMoralis()
 
-  const [ tokenList, setTokenlist ] = useState()
-
   const getSupportedTokens = async (chain) => {
     await Moralis.initPlugins()
-    Moralis.Plugins.oneInch
-      .getSupportedTokens({ chain })
-      .then((tokens) => setTokenlist(tokens.tokens))
+    const tokenLists =  await Moralis.Plugins.oneInch.getSupportedTokens({ chain })
+
+    return tokenLists
   }
 
-  return {  tokenList, getSupportedTokens }
+  return {  getSupportedTokens }
 }
 
 export default useIncDex

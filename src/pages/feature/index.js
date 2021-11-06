@@ -4,7 +4,7 @@ import { useMoralis } from 'react-moralis'
 
 import { MdMenuOpen, MdMenu } from 'react-icons/md'
 
-import Trade from './Trade/Trade'
+import Trade from './Trade'
 import Farms from './Farms/Farms'
 import Community from './Community/Community'
 import ComodoContract from './ComodoContract/ComodoContract'

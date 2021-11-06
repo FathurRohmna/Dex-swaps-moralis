@@ -1,19 +1,29 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { MoralisProvider } from 'react-moralis'
+import { Provider } from 'react-redux'
+
+import configureStore from './store/rootStore/configure-store'
 
 import './styles/index.css'
 import './styles/main.css'
 import App from './app/App'
 import reportWebVitals from './reportWebVitals'
 
+const APP_ID = "NdpE3ntjpOPgpH6iIBCVwbLQDcvcH0Yqf6dFy3IJ"
+const SERVER_URL = "https://xsdgea7ces22.usemoralis.com:2053/server"
+
+const store = configureStore()
+
 ReactDOM.render(
   <React.StrictMode>
     <MoralisProvider 
-      appId="NdpE3ntjpOPgpH6iIBCVwbLQDcvcH0Yqf6dFy3IJ" 
-      serverUrl="https://xsdgea7ces22.usemoralis.com:2053/server"
+      appId={APP_ID}
+      serverUrl={SERVER_URL}
     >
-      <App />
+      <Provider store={store}>
+        <App />
+      </Provider>
     </MoralisProvider>
   </React.StrictMode>,
   document.getElementById('root')

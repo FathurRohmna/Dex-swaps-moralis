@@ -4,7 +4,7 @@ import {
   SET_CHAIN_ID, 
   SET_CHAIN_ID_SUCCESS, 
   AUTHENTICATION_FAILED 
-} from './auntentication-constants'
+} from './authentication-constants'
 
 const initState = {
   isLoading: false,
