@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { useMoralis } from 'react-moralis'
 
@@ -11,10 +11,13 @@ import ComodoContract from './ComodoContract/ComodoContract'
 import PriceCart from './PriceCart/PriceCart'
 
 import { MoralisDaap } from '../../components/MoralisDaap'
+import { ConnectionPopup } from '../../components/ConnectionPopup'
 
 import LogoHeader from '../../assets/logo-header.png'
 
 export function Feature() {
+  const [openWalletConnection, setOpenWalletConnection] = useState(false)
+
   const { isWeb3Enabled, enableWeb3, authenticate, isAuthenticated, isWeb3EnableLoading } = useMoralis()
 
   console.log(isAuthenticated, 'isAuthenticated')
@@ -26,7 +29,7 @@ export function Feature() {
   return (
     <MoralisDaap>
       <div className="relative block w-full">
-        <header className="fixed top-0 left-0 w-full h-16 bg-gray-900 border-b-2 border-gray-800 z-50">
+        <header className="fixed top-0 left-0 w-full box-border h-16 bg-gray-900 border-b-2 border-gray-800 z-40">
           <div className="relative w-full flex justify-between h-full items-center px-4">
             <div className="text-primary flex items-center">
               <div className="mr-2">
@@ -35,7 +38,7 @@ export function Feature() {
               <img src={LogoHeader} alt="Image Here" className="h-8 w-auto ml-2" />
             </div>
             {!isAuthenticated && <button
-              onClick={() => authenticate({ signingMessage: 'Hello World' })}
+              onClick={() => setOpenWalletConnection(true)}
               className="px-4 py-1 rounded-full bg-primary text-white font-bold text-lg">
               Connect
             </button>}
@@ -77,6 +80,10 @@ export function Feature() {
             </Routes>
           </div>
         </div>
+        <ConnectionPopup
+          openWallet={openWalletConnection}
+          setOpenWallet={setOpenWalletConnection}
+        />
       </div>
     </MoralisDaap>
   )

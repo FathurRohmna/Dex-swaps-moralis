@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useMoralis } from 'react-moralis'
 
 const useIncDex = () => {
@@ -11,7 +10,18 @@ const useIncDex = () => {
     return tokenLists
   }
 
-  return {  getSupportedTokens }
+  const getQuote = async (params) => {
+    const quote = await Moralis.Plugins.oneInch.quote({
+      chain: 'eth',
+      fromTokenAddress: params.fromToken.address,
+      toTokenAddress: params.toToken.address,
+      amount: Moralis.Units.Token(params.fromAmount, params.fromToken.decimals).toString()
+    })
+
+    return quote
+  } 
+
+  return {  getSupportedTokens, getQuote }
 }
 
 export default useIncDex

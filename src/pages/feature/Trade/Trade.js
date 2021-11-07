@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useMoralis } from 'react-moralis'
 
 import { IoMdSettings } from 'react-icons/io'
@@ -7,6 +7,9 @@ import { AiOutlineArrowDown } from 'react-icons/ai'
 
 import useIncDex from '../../../hooks/useIncDex'
 import { Controllers } from '../../../components/Controllers'
+import { Popup } from '../../../components/Popup'
+
+import BnbLogo from '../../../assets/bnb.png'
 
 const Trade = ({
   isTokenListLoaded,
@@ -16,9 +19,40 @@ const Trade = ({
   setTokenSupportListSuccess,
   setFailed
 }) => {
-  const { getSupportedTokens } = useIncDex()
+  const [openPopup, setOpenPopup] = useState(false)
+  const [openWalletConnection, setOpenWalletConnection] = useState(false)
+  const [popupType, setPopupType] = useState()
+  const [fromToken, setFromToken] = useState()
+  const [toToken, setToToken] = useState()
+  const [fromAmount, setFromAmount] = useState()
+  const [quote, setQuote] = useState()
+  const [currentTrade, setCurrentTrade] = useState()
 
-  const handleGetTokenSupport = async () => {
+  const { getSupportedTokens, getQuote } = useIncDex()
+  const { Moralis } = useMoralis()
+
+  useEffect(() => {
+    if (fromAmount) setCurrentTrade({ fromToken, toToken, fromAmount })
+  }, [toToken, fromToken, fromAmount])
+
+  useEffect( () => {
+    async function handleGetQuote() {
+      if (currentTrade) {
+        const getMoraQuote = await getQuote(currentTrade)
+
+        setQuote(getMoraQuote)
+      }
+    }
+
+    handleGetQuote()
+  }, [currentTrade])
+
+  console.log(fromToken, toToken);
+  console.log(quote);
+
+  const handleGetTokenSupport = async (type) => {
+    setOpenPopup(true)
+    setPopupType(type)
     if(!tokenLists) {
       setTokenSupportList()
       const tokenLists = await getSupportedTokens('eth')
@@ -32,10 +66,20 @@ const Trade = ({
     }
   }
 
-  console.log(tokenLists, 'okenLists')
+  const onChangeHandler = (event) => setFromAmount(event.target.value)
+
+  const handleQuoteTokenType = (address) => {
+    if (popupType === 'setFromToken') {
+      setFromToken(address)
+    }
+    if (popupType === 'setToToken') {
+      setToToken(address)
+    }
+  }
 
   return (
-    <div className="relative w-full">
+    <>
+      <div className="relative w-full h-full">
       <div className="flex flex-col py-8 justify-center items-center w-full min-h-90">
         <div className="flex mb-8 p-2">
           <div className="px-6 py-2 bg-primary rounded-l-full">
@@ -69,10 +113,12 @@ const Trade = ({
                     <Controllers.InputText
                       type="text"
                       placeholder="0.0"
+                      onChange={onChangeHandler}
+                      value={fromAmount}
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
-                    <button onClick={() => handleGetTokenSupport()}>
+                    <button onClick={() => handleGetTokenSupport('setFromToken')}>
                       Token
                     </button>
                   </div>
@@ -90,10 +136,20 @@ const Trade = ({
                     <Controllers.InputText
                       type="text"
                       placeholder="0.0"
+                      value={
+                        quote
+                          ? Moralis.Units.FromWei(quote?.toTokenAmount, quote?.toToken?.decimals).toFixed(
+                              6
+                            )
+                          : ""
+                      }
+                      readOnly
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
-                    <p>Hello</p>
+                    <button onClick={() => handleGetTokenSupport('setToToken')}>
+                      Token
+                    </button>
                   </div>
                 </div>
 
@@ -111,6 +167,46 @@ const Trade = ({
           </div>
       </div>
     </div>
+    <Popup
+      open={openPopup}
+      setOpen={setOpenPopup}
+    >
+      <div className="w-full">
+        <div className="border-b border-gray-600 px-6 py-4">
+          <div className="flex justify-between mb-4">
+            <p>Select a token</p>
+            <p>p</p>
+          </div>
+          <div className="w-full my-2">
+            <input type="text" className="w-full px-4 py-3 rounded-xl leading-7" placeholder="Token Search Placeholder" />
+          </div>
+          <div className="flex justify-between mt-4 mb-2">
+            <p>Token name</p>
+            <p>p</p>
+          </div>
+        </div>
+        <div className="w-full">
+          <div className="w-full">
+            <button className="w-full flex px-6 items-center py-4">
+              <img src={BnbLogo} alt="Bnb Logo" className="w-6 h-6 mr-4" />
+              <p className="text-white text-base font-bold">BNB</p>
+            </button>
+          </div>
+          {isTokenListLoading && <h1>Loading  Token .......</h1>}
+          {tokenLists && tokenLists.map(token => {
+            return (
+              <div className="w-full" key={token.address}>
+                <button onClick={() => handleQuoteTokenType(token)} className="w-full flex px-6 items-center py-4">
+                  <img src={token.logoURI} alt="Bnb Logo" className="w-6 h-6 mr-4" />
+                  <p className="text-white text-base font-bold">{token.symbol}</p>
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </Popup>
+    </>
   )
 }
 
