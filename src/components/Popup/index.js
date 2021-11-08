@@ -33,7 +33,7 @@ export function Popup({ open, setOpen, children }) {
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <div className="inline-block w-full max-w-md overflow-hidden text-left align-top mt-24 transition-all transform bg-bgsecondary shadow-xl rounded-2xl">
+            <div className="inline-block w-full max-w-sm overflow-hidden text-left align-top mt-24 transition-all transform bg-bgsecondary shadow-xl rounded-3xl">
               {children}
             </div>
           </Transition.Child>

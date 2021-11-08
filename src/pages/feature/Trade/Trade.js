@@ -27,12 +27,31 @@ const Trade = ({
   const [fromAmount, setFromAmount] = useState()
   const [quote, setQuote] = useState()
   const [currentTrade, setCurrentTrade] = useState()
+  const [reverseToken, setReverseToken] = useState(false)
 
   const { getSupportedTokens, getQuote } = useIncDex()
   const { Moralis } = useMoralis()
 
   useEffect(() => {
+    // if (fromAmount) {
+    //   if (reverseToken) {
+    //     setCurrentTrade({ fromToken, toToken, fromAmount })
+    //   } else {
+    //     setCurrentTrade({ toToken, fromToken, fromAmount })
+    //   }
+    // }
+
+    // if (reverseToken) {
+    //   if (fromAmount) {
+    //     setCurrentTrade({ fromToken, toToken, fromAmount })
+    //   } else {
+    //     setCurrentTrade({ toToken, fromToken, fromAmount })
+    //   }
+    // }
+
     if (fromAmount) setCurrentTrade({ fromToken, toToken, fromAmount })
+    // if (reverseToken && !fromAmount) setCurrentTrade({ toToken, fromToken, fromAmount })
+    // if (fromAmount && reverseToken) setCurrentTrade({ fromToken, toToken, fromAmount })
   }, [toToken, fromToken, fromAmount])
 
   useEffect( () => {
@@ -46,9 +65,6 @@ const Trade = ({
 
     handleGetQuote()
   }, [currentTrade])
-
-  console.log(fromToken, toToken);
-  console.log(quote);
 
   const handleGetTokenSupport = async (type) => {
     setOpenPopup(true)
@@ -77,6 +93,27 @@ const Trade = ({
     }
   }
 
+  function disabledToken(address) {
+    if (fromToken?.address === address || toToken?.address === address) {
+      return true
+    }
+    return false
+  }
+
+  function handleReverseToken() {
+    setReverseToken(!reverseToken)
+    setFromToken(toToken)
+    setToToken(fromToken)
+    setCurrentTrade({ fromToken, toToken, fromAmount })
+  }
+
+  function convertFromWei() {
+    if (quote) {
+      return Moralis.Units.FromWei(quote?.toTokenAmount, quote?.toToken?.decimals).toFixed(6)
+    } else {
+      return 0
+    }
+  }
   return (
     <>
       <div className="relative w-full h-full">
@@ -114,18 +151,21 @@ const Trade = ({
                       type="text"
                       placeholder="0.0"
                       onChange={onChangeHandler}
-                      value={fromAmount}
+                      value={reverseToken ? convertFromWei() : fromAmount}
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
                     <button onClick={() => handleGetTokenSupport('setFromToken')}>
-                      Token
+                      {fromToken ? <span>
+                        <img src={fromToken.logoURI} alt="" />
+                        <p>{fromToken.symbol}</p>
+                      </span> : <p>Set currect token</p> }
                     </button>
                   </div>
                 </div>
 
                 <div className="flex w-full items-center justify-center mb-3">
-                  <button className="p-1 bg-secondary text-primary rounded-full">
+                  <button onClick={() => handleReverseToken()} className="p-1 bg-secondary text-primary rounded-full">
                     <AiOutlineArrowDown size={25} />
                   </button>
                 </div>
@@ -136,19 +176,16 @@ const Trade = ({
                     <Controllers.InputText
                       type="text"
                       placeholder="0.0"
-                      value={
-                        quote
-                          ? Moralis.Units.FromWei(quote?.toTokenAmount, quote?.toToken?.decimals).toFixed(
-                              6
-                            )
-                          : ""
-                      }
-                      readOnly
+                      value={!reverseToken ? convertFromWei() : fromAmount}
+                      onChange={onChangeHandler}
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
                     <button onClick={() => handleGetTokenSupport('setToToken')}>
-                      Token
+                      {toToken ? <span>
+                        <img src={toToken.logoURI} alt="" />
+                        <p>{toToken.symbol}</p>
+                      </span> : <p>Set currect token</p> }
                     </button>
                   </div>
                 </div>
@@ -196,7 +233,7 @@ const Trade = ({
           {tokenLists && tokenLists.map(token => {
             return (
               <div className="w-full" key={token.address}>
-                <button onClick={() => handleQuoteTokenType(token)} className="w-full flex px-6 items-center py-4">
+                <button disabled={disabledToken(token.address)} onClick={() => handleQuoteTokenType(token)} className="w-full flex px-6 items-center py-4">
                   <img src={token.logoURI} alt="Bnb Logo" className="w-6 h-6 mr-4" />
                   <p className="text-white text-base font-bold">{token.symbol}</p>
                 </button>
