@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import Home from '../pages/home/Home'
-import { Feature } from '../pages/feature'
+import Feature from '../pages/feature'
 
 function App() {
   return (

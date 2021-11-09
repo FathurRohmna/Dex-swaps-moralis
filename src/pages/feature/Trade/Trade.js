@@ -8,6 +8,7 @@ import { AiOutlineArrowDown } from 'react-icons/ai'
 import useIncDex from '../../../hooks/useIncDex'
 import { Controllers } from '../../../components/Controllers'
 import { Popup } from '../../../components/Popup'
+import { ConnectionPopup } from '../../../components/ConnectionPopup'
 
 import BnbLogo from '../../../assets/bnb.png'
 
@@ -15,6 +16,7 @@ const Trade = ({
   isTokenListLoaded,
   isTokenListLoading,
   tokenLists,
+  walletAddress,
   setTokenSupportList,
   setTokenSupportListSuccess,
   setFailed
@@ -27,31 +29,13 @@ const Trade = ({
   const [fromAmount, setFromAmount] = useState()
   const [quote, setQuote] = useState()
   const [currentTrade, setCurrentTrade] = useState()
-  const [reverseToken, setReverseToken] = useState(false)
+  const [changeEstimatedInput, setChangeEstimatedInput] = useState(false)
 
-  const { getSupportedTokens, getQuote } = useIncDex()
-  const { Moralis } = useMoralis()
+  const { getSupportedTokens, getQuote, trySwap } = useIncDex()
+  const { isAuthenticated } = useMoralis()
 
   useEffect(() => {
-    // if (fromAmount) {
-    //   if (reverseToken) {
-    //     setCurrentTrade({ fromToken, toToken, fromAmount })
-    //   } else {
-    //     setCurrentTrade({ toToken, fromToken, fromAmount })
-    //   }
-    // }
-
-    // if (reverseToken) {
-    //   if (fromAmount) {
-    //     setCurrentTrade({ fromToken, toToken, fromAmount })
-    //   } else {
-    //     setCurrentTrade({ toToken, fromToken, fromAmount })
-    //   }
-    // }
-
-    if (fromAmount) setCurrentTrade({ fromToken, toToken, fromAmount })
-    // if (reverseToken && !fromAmount) setCurrentTrade({ toToken, fromToken, fromAmount })
-    // if (fromAmount && reverseToken) setCurrentTrade({ fromToken, toToken, fromAmount })
+    if (fromAmount && fromToken && toToken) setCurrentTrade({ fromToken, toToken, fromAmount })
   }, [toToken, fromToken, fromAmount])
 
   useEffect( () => {
@@ -66,12 +50,21 @@ const Trade = ({
     handleGetQuote()
   }, [currentTrade])
 
+  useEffect(() => {
+    if (walletAddress) {
+      setCurrentTrade({
+        ...currentTrade,
+        walletAddress: walletAddress
+      })
+    }
+  }, [walletAddress])
+
   const handleGetTokenSupport = async (type) => {
     setOpenPopup(true)
     setPopupType(type)
     if(!tokenLists) {
       setTokenSupportList()
-      const tokenLists = await getSupportedTokens('eth')
+      const tokenLists = await getSupportedTokens('bsc')
       if (!tokenLists) {
         setFailed({
           message: 'Failed to Load Support Tokens'
@@ -82,7 +75,17 @@ const Trade = ({
     }
   }
 
-  const onChangeHandler = (event) => setFromAmount(event.target.value)
+  const onChangeHandler = (event) => {
+    const targetName = event.target.name
+
+    if (targetName === 'estimated') {
+      setChangeEstimatedInput(true)
+    } else {
+      setChangeEstimatedInput(false)
+    }
+
+    setFromAmount(event.target.value)
+  }
 
   const handleQuoteTokenType = (address) => {
     if (popupType === 'setFromToken') {
@@ -99,21 +102,15 @@ const Trade = ({
     }
     return false
   }
-
-  function handleReverseToken() {
-    setReverseToken(!reverseToken)
-    setFromToken(toToken)
-    setToToken(fromToken)
-    setCurrentTrade({ fromToken, toToken, fromAmount })
-  }
-
-  function convertFromWei() {
-    if (quote) {
-      return Moralis.Units.FromWei(quote?.toTokenAmount, quote?.toToken?.decimals).toFixed(6)
+  
+  const handleSwapToken = () => {
+    if (isAuthenticated) {
+      trySwap(currentTrade)
     } else {
-      return 0
+      setOpenWalletConnection(true)
     }
   }
+
   return (
     <>
       <div className="relative w-full h-full">
@@ -147,11 +144,13 @@ const Trade = ({
                 <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
                   <div className="w-3/4 px-1">
                     <p className="text-white text-base">From</p>
+                    {changeEstimatedInput ? <p>(Estimated)</p> : ''}
                     <Controllers.InputText
                       type="text"
+                      name="amount"
                       placeholder="0.0"
                       onChange={onChangeHandler}
-                      value={reverseToken ? convertFromWei() : fromAmount}
+                      value={fromAmount}
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
@@ -165,7 +164,7 @@ const Trade = ({
                 </div>
 
                 <div className="flex w-full items-center justify-center mb-3">
-                  <button onClick={() => handleReverseToken()} className="p-1 bg-secondary text-primary rounded-full">
+                  <button className="p-1 bg-secondary text-primary rounded-full">
                     <AiOutlineArrowDown size={25} />
                   </button>
                 </div>
@@ -173,11 +172,13 @@ const Trade = ({
                 <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
                   <div className="w-3/4 px-1">
                     <p className="text-white">To</p>
+                    {!changeEstimatedInput ? <p>(Estimated)</p> : ''}
                     <Controllers.InputText
                       type="text"
+                      name="estimated"
                       placeholder="0.0"
-                      value={!reverseToken ? convertFromWei() : fromAmount}
-                      onChange={onChangeHandler}
+                      value={quote ? quote  : 0}
+                      readOnly
                     />
                   </div>
                   <div className="w-1/4 px-1 self-end">
@@ -190,13 +191,8 @@ const Trade = ({
                   </div>
                 </div>
 
-                <div className="flex w-full items-center justify-between text-sm px-4 py-3 text-white mb-3">
-                  <p>Slipage Tolerance</p>
-                  <p>6.3%</p>
-                </div>
-
-                <button className="bg-primary text-center p-4 rounded-2xl w-full font-bold text-white text-lg">
-                  Unlock Wallet
+                <button onClick={handleSwapToken} className="bg-primary text-center p-4 rounded-2xl w-full font-bold text-white text-lg">
+                  {!isAuthenticated ? "Unlock Wallet" : "Swaps"}
                 </button>
               </div>
 
@@ -223,12 +219,6 @@ const Trade = ({
           </div>
         </div>
         <div className="w-full">
-          <div className="w-full">
-            <button className="w-full flex px-6 items-center py-4">
-              <img src={BnbLogo} alt="Bnb Logo" className="w-6 h-6 mr-4" />
-              <p className="text-white text-base font-bold">BNB</p>
-            </button>
-          </div>
           {isTokenListLoading && <h1>Loading  Token .......</h1>}
           {tokenLists && tokenLists.map(token => {
             return (
@@ -243,6 +233,10 @@ const Trade = ({
         </div>
       </div>
     </Popup>
+    <ConnectionPopup
+      openWallet={openWalletConnection}
+      setOpenWallet={setOpenWalletConnection}
+    />
     </>
   )
 }

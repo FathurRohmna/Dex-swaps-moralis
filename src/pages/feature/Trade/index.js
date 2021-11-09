@@ -12,11 +12,13 @@ import {
   setTokenSupportListSuccess,
   setFailed
 } from '../../../store/tokenlists/tokenlists-actions'
+import { walletAddress } from '../../../selector/authentication-selector'
 
 const mapStateToProps = (state) => ({
   isTokenListLoaded: isTokenListLoaded(state),
   isTokenListLoading: isTokenListLoading(state),
-  tokenLists: tokenLists(state)
+  tokenLists: tokenLists(state),
+  walletAddress: walletAddress(state)
 })
 
 const actions = {
