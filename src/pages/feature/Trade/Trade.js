@@ -9,8 +9,7 @@ import useIncDex from '../../../hooks/useIncDex'
 import { Controllers } from '../../../components/Controllers'
 import { Popup } from '../../../components/Popup'
 import { ConnectionPopup } from '../../../components/ConnectionPopup'
-
-import BnbLogo from '../../../assets/bnb.png'
+import { TransactionsHistory } from '../../../components/TransactionsHistory'
 
 const Trade = ({
   isTokenListLoaded,
@@ -30,6 +29,7 @@ const Trade = ({
   const [quote, setQuote] = useState()
   const [currentTrade, setCurrentTrade] = useState()
   const [changeEstimatedInput, setChangeEstimatedInput] = useState(false)
+  const [openHistory, setOpenHistory] = useState(false)
 
   const { getSupportedTokens, getQuote, trySwap } = useIncDex()
   const { isAuthenticated } = useMoralis()
@@ -57,7 +57,7 @@ const Trade = ({
         walletAddress: walletAddress
       })
     }
-  }, [walletAddress])
+  }, [])
 
   const handleGetTokenSupport = async (type) => {
     setOpenPopup(true)
@@ -135,14 +135,16 @@ const Trade = ({
                 <button className="w-12">
                   <IoMdSettings size={25} />
                 </button>
-                <button className="w-12">
+                <button 
+                  onClick={() => setOpenHistory(true)}
+                  className="w-12">
                   <MdHistory size={25} />
                 </button>
               </div>
 
               <div className="p-6">
-                <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
-                  <div className="w-3/4 px-1">
+                <div className="w-full flex flex-1 bg-secondary p-4 rounded-xl mb-3">
+                  <div className="flex-1 px-1">
                     <p className="text-white text-base">From</p>
                     {changeEstimatedInput ? <p>(Estimated)</p> : ''}
                     <Controllers.InputText
@@ -153,12 +155,12 @@ const Trade = ({
                       value={fromAmount}
                     />
                   </div>
-                  <div className="w-1/4 px-1 self-end">
+                  <div className="px-1 self-end">
                     <button onClick={() => handleGetTokenSupport('setFromToken')}>
-                      {fromToken ? <span>
-                        <img src={fromToken.logoURI} alt="" />
-                        <p>{fromToken.symbol}</p>
-                      </span> : <p>Set currect token</p> }
+                      {fromToken ? <span className="flex items-center">
+                        <img src={fromToken.logoURI} className="w-8 h-8" alt="" />
+                        <p className="px-1 text-white font-semibold">{fromToken.symbol}</p>
+                      </span> : <p className="text-white font-semibold">Select a currency</p> }
                     </button>
                   </div>
                 </div>
@@ -169,24 +171,24 @@ const Trade = ({
                   </button>
                 </div>
 
-                <div className="w-full flex bg-secondary p-4 rounded-xl mb-3">
-                  <div className="w-3/4 px-1">
+                <div className="w-full flex flex-1 bg-secondary p-4 rounded-xl mb-3">
+                  <div className="flex-1 px-1">
                     <p className="text-white">To</p>
                     {!changeEstimatedInput ? <p>(Estimated)</p> : ''}
                     <Controllers.InputText
                       type="text"
                       name="estimated"
                       placeholder="0.0"
-                      value={quote ? quote  : 0}
+                      value={quote ? quote  : ''}
                       readOnly
                     />
                   </div>
-                  <div className="w-1/4 px-1 self-end">
+                  <div className="px-1 self-end">
                     <button onClick={() => handleGetTokenSupport('setToToken')}>
-                      {toToken ? <span>
-                        <img src={toToken.logoURI} alt="" />
-                        <p>{toToken.symbol}</p>
-                      </span> : <p>Set currect token</p> }
+                      {toToken ? <span className="flex items-center">
+                        <img src={toToken.logoURI} className="w-8 h-8" alt="" />
+                        <p className="px-1 text-white font-semibold">{toToken.symbol}</p>
+                      </span> : <p className="text-white font-semibold">Set currect token</p> }
                     </button>
                   </div>
                 </div>
@@ -207,14 +209,14 @@ const Trade = ({
       <div className="w-full">
         <div className="border-b border-gray-600 px-6 py-4">
           <div className="flex justify-between mb-4">
-            <p>Select a token</p>
+            <p className="text-white text-lg font-semibold">Select a token</p>
             <p>p</p>
           </div>
           <div className="w-full my-2">
-            <input type="text" className="w-full px-4 py-3 rounded-xl leading-7" placeholder="Token Search Placeholder" />
+            <input type="text" className="w-full px-4 py-3 rounded-xl leading-7 bg-transparent border border-primary focus:outline-none" placeholder="Token Search Placeholder" />
           </div>
           <div className="flex justify-between mt-4 mb-2">
-            <p>Token name</p>
+            <p className="text-white">Token name</p>
             <p>p</p>
           </div>
         </div>
@@ -236,6 +238,11 @@ const Trade = ({
     <ConnectionPopup
       openWallet={openWalletConnection}
       setOpenWallet={setOpenWalletConnection}
+    />
+    <TransactionsHistory
+      open={openHistory}
+      setOpen={setOpenHistory}
+      isAuthenticated={isAuthenticated}
     />
     </>
   )

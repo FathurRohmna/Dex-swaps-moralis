@@ -32,21 +32,19 @@ const Feature = ({ walletAddress, setWalletAddressSuccess }) => {
   const [openWalletConnection, setOpenWalletConnection] = useState(false)
   const [openWalletAddress, setOpenWalletAddress] = useState(false)
 
-  const { isWeb3Enabled, enableWeb3, web3, user, isAuthenticated, isWeb3EnableLoading } = useMoralis()
-
-  useEffect(() => {
-    if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3()
-  }, [isAuthenticated, isWeb3Enabled])
+  const { web3, user, isAuthenticated, logout, isWeb3Enabled, isWeb3EnableLoading, enableWeb3, Moralis } = useMoralis()
 
   useEffect(() => {
     if (isAuthenticated) {
       setWalletAddressSuccess(web3.givenProvider?.selectedAddress || user?.get('ethAddress'))
-    }
-
-    if (walletAddress) {
       setOpenWalletAddress(!openWalletAddress)
     }
-  }, [user, web3, walletAddress])
+
+  }, [user, web3])
+
+  useEffect(() => {
+    if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
+  }, [isAuthenticated, isWeb3Enabled]);
 
   return (
       <div className="relative block w-full">
@@ -58,7 +56,7 @@ const Feature = ({ walletAddress, setWalletAddressSuccess }) => {
               </div>
               <img src={LogoHeader} alt="Image Here" className="h-8 w-auto ml-2" />
             </div>
-            {!isAuthenticated && <button
+            {isAuthenticated ? <button className="px-4 py-1 rounded-full bg-primary text-white font-bold w-32 text-lg overflow-hidden box-border" onClick={() => setOpenWalletAddress(true)}>{walletAddress ? walletAddress : 'Loading....'}</button> : <button
               onClick={() => setOpenWalletConnection(true)}
               className="px-4 py-1 rounded-full bg-primary text-white font-bold text-lg">
               Connect
@@ -110,8 +108,14 @@ const Feature = ({ walletAddress, setWalletAddressSuccess }) => {
           setOpen={setOpenWalletAddress}
         >
           <div className="w-full">
-            <div className="px-6 py-4">
-              <h1>WalletAddress : {walletAddress}</h1>
+            <div className="w-full">
+              <div className="border-b border-white py-6 px-8">
+                <h1 className="text-xl font-semibold text-white">Wallet Address</h1>
+              </div>
+            </div>
+            <div className="w-full py-6 px-8 box-border overflow-hidden">
+              <h1 className="text-xs text-primary my-4">{walletAddress}</h1>
+              <button className="px-3 py-2 text-primary font-semibold border-primary border rounded-lg" onClick={() => logout()}>Logout</button>
             </div>
           </div>
         </Popup>

@@ -43,7 +43,7 @@ const useIncDex = () => {
             })
           }
         })
-        .catch((e) => console.log(e.message))
+        .catch((e) => console.log(e.message, 'Error Hereasdasd'))
     }
 
     await doSwap(params) 
@@ -53,11 +53,11 @@ const useIncDex = () => {
         }
         console.log(receipt)
       })
-      .catch((e) => console.log(e.message))
+      .catch((e) => console.log(e.message, 'erre hjashdjashjdksa'))
   }
 
   async function doSwap(params) {
-    return await Moralis.Plugins.onInch.swap({
+    return await Moralis.Plugins.oneInch.swap({
       chain: 'bsc',
       fromTokenAddress: params.fromToken.address,
       toTokenAddress: params.toToken.address,
